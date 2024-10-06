@@ -2,6 +2,8 @@ package database
 
 import (
 	"context"
+	"os"
+
 	// "encoding/json"
 	"fmt"
 	"log"
@@ -10,44 +12,24 @@ import (
 	// "github.com/aws/aws-sdk-go-v2/aws"
 	// "github.com/aws/aws-sdk-go-v2/config"
 	// "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// DBinstance connects to MongoDB using a connection string from AWS Secrets Manager.
 func DBinstance() *mongo.Client {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// // Load the AWS configuration
-	// cfg, err := config.LoadDefaultConfig(ctx)
-	// if err != nil {
-	// 	log.Fatalf("Error loading AWS config: %v", err)
-	// }
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-	// // Create a Secrets Manager client
-	// secretsManagerClient := secretsmanager.NewFromConfig(cfg)
-
-	// // Retrieve the MongoDB connection string from Secrets Manager
-	// secretValue, err := secretsManagerClient.GetSecretValue(ctx, &secretsmanager.GetSecretValueInput{
-	// 	SecretId: aws.String("myApp/mongo-db-credentials"), // Replace with your secret ID
-	// })
-	// if err != nil {
-	// 	log.Fatalf("Error retrieving secret: %v", err)
-	// }
-
-	// // Parse the secret string to extract the connection string
-	// var secretsMap map[string]string
-	// if err := json.Unmarshal([]byte(*secretValue.SecretString), &secretsMap); err != nil {
-	// 	log.Fatalf("Error unmarshalling secret: %v", err)
-	// }
-
-	// connectionString, exists := secretsMap["connectionString"]
-	// if !exists {
-	// 	log.Fatalf("Connection string not found in secret")
-	// }
-
-	connectionString := "mongodb+srv://task3-shreeraj:YIXZaFDnEmHXC3PS@cluster0.0elhpdy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+	connectionString := os.Getenv("MONGOURL")
+	if connectionString == "" {
+		log.Fatalf("Empty mongo db string")
+	}
 
 	// Create a new MongoDB client
 	client, err := mongo.NewClient(options.Client().ApplyURI(connectionString))
