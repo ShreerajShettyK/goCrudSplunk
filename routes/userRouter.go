@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"go-chat-app/controllers"
+	"goCrudSplunk/controllers"
 	"net/http"
 )
 

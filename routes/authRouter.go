@@ -1,8 +1,8 @@
 package routes
 
 import (
+	"goCrudSplunk/controllers"
 	"net/http"
-	"go-chat-app/controllers"
 )
 
 func AuthRoutes() {
