@@ -9,6 +9,6 @@ import (
 
 // AuthRoutes now expects *chi.Mux instead of *http.ServeMux
 func AuthRoutes(router *chi.Mux, logger *zap.Logger) {
-	router.HandleFunc("/users/signup", controllers.Signup(logger))
-	router.HandleFunc("/users/login", controllers.Login(logger))
+	router.Post("/users/signup", controllers.Signup(logger))
+	router.Post("/users/login", controllers.Login(logger))
 }

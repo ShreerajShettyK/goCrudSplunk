@@ -64,7 +64,7 @@ func main() {
 
 	// Setup routes
 	routes.AuthRoutes(router, logger)
-	// routes.UserRoutes(router, logger)
+	routes.UserRoutes(router, logger)
 
 	logger.Info("Starting server on port " + port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
