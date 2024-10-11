@@ -2,10 +2,13 @@ package routes
 
 import (
 	"goCrudSplunk/controllers"
-	"net/http"
+
+	"github.com/go-chi/chi"
+	"go.uber.org/zap"
 )
 
-func AuthRoutes() {
-	http.HandleFunc("/users/signup", controllers.Signup)
-	http.HandleFunc("/users/login", controllers.Login)
+// AuthRoutes now expects *chi.Mux instead of *http.ServeMux
+func AuthRoutes(router *chi.Mux, logger *zap.Logger) {
+	router.HandleFunc("/users/signup", controllers.Signup(logger))
+	router.HandleFunc("/users/login", controllers.Login(logger))
 }
