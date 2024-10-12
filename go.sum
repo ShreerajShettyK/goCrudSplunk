@@ -27,6 +27,8 @@ github.com/go-playground/validator/v10 v10.22.1 h1:40JcKH+bBNGFczGuoBYgX4I6m/i27
 github.com/go-playground/validator/v10 v10.22.1/go.mod h1:dbuPbCMFw/DrkbEynArYaCwl3amGuJotoKCe95atGMM=
 github.com/goccy/go-json v0.10.2 h1:CrxCmQqYDkv1z7lO7Wbh2HN93uovUHgrECaO5ZrCXAU=
 github.com/goccy/go-json v0.10.2/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
+github.com/golang-jwt/jwt/v5 v5.2.1 h1:OuVbFODueb089Lh128TAcimifWaLhJwVflnrgM17wHk=
+github.com/golang-jwt/jwt/v5 v5.2.1/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
 github.com/golang/snappy v0.0.4 h1:yAGX7huGHXlcLOEtBnF4w7FQwA26wojNCwOYAEhLjQM=
 github.com/golang/snappy v0.0.4/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
@@ -60,6 +62,8 @@ github.com/signalfx/splunk-otel-go/instrumentation/github.com/go-chi/chi/splunkc
 github.com/signalfx/splunk-otel-go/instrumentation/github.com/go-chi/chi/splunkchi v1.20.0/go.mod h1:RmQgjLHdNDYKVucc5iZKo9BKe9JLoU41C8g+OQOhNnE=
 github.com/signalfx/splunk-otel-go/instrumentation/internal v1.20.0 h1:yki+VTzwLIxiltskatEDhY/LYeBXxsj218eS/G6hfLY=
 github.com/signalfx/splunk-otel-go/instrumentation/internal v1.20.0/go.mod h1:umOXY7M90XuC5g63+Oc+5JSjObM6HUBx2O5eYMXyIXs=
+github.com/sikozonpc/ecom v0.0.0-20240807164251-6cc220748ec6 h1:S1qqkdS1ulbtGKay6TfHbSnVSpueouGuyv1Ca9jD+EE=
+github.com/sikozonpc/ecom v0.0.0-20240807164251-6cc220748ec6/go.mod h1:k7MLxhan+OGIzkGw1tNfZnFnM13K2KfsXhxv6gf0AcI=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
 github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=

@@ -3,6 +3,8 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"goCrudSplunk/auth"
+	"goCrudSplunk/configs"
 	"goCrudSplunk/database"
 	"goCrudSplunk/helpers"
 	"goCrudSplunk/models"
@@ -110,12 +112,14 @@ func Login(logger *zap.Logger) http.HandlerFunc {
 		var user models.User
 		var foundUser models.User
 
+		// Decode the request body
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			logToSplunk("Failed to decode request body", map[string]interface{}{"error": err.Error()}, "error", r, traceID, http.StatusBadRequest)
 			sendErrorResponse(w, logger, err.Error(), http.StatusBadRequest, err)
 			return
 		}
 
+		// Check if the user exists
 		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser)
 		if err != nil {
 			logToSplunk("Login attempt with non-existent email", map[string]interface{}{"email": *user.Email}, "warn", r, traceID, http.StatusUnauthorized)
@@ -123,6 +127,7 @@ func Login(logger *zap.Logger) http.HandlerFunc {
 			return
 		}
 
+		// Verify the password
 		passwordIsValid, msg := helpers.VerifyPassword(*user.Password, *foundUser.Password)
 		if !passwordIsValid {
 			logToSplunk("Login attempt with incorrect password", map[string]interface{}{"email": *user.Email}, "warn", r, traceID, http.StatusUnauthorized)
@@ -130,13 +135,28 @@ func Login(logger *zap.Logger) http.HandlerFunc {
 			return
 		}
 
+		// Generate JWT token for the user
+		secret := []byte(configs.Envs.JWTSecret)
+		// token, err := auth.CreateJWT(secret, foundUser.ID)
+		token, err := auth.CreateJWT(secret, foundUser.ID.Hex()) // Pass user ID as string
+
+		if err != nil {
+			logToSplunk("Failed to generate JWT token", map[string]interface{}{"user_id": foundUser.User_id}, "error", r, traceID, http.StatusInternalServerError)
+			sendErrorResponse(w, logger, "Failed to generate JWT token", http.StatusInternalServerError, err)
+			return
+		}
+
+		// Successful login and token generation
 		responseTime := time.Since(start).Milliseconds()
 		logger.Info("User logged in successfully", zap.String("user_id", foundUser.User_id))
-		logToSplunk("User logged in successfully", map[string]interface{}{"user_id": foundUser.User_id, "response_time": responseTime}, "info", r, traceID, http.StatusOK)
+		logToSplunk("User logged in successfully", map[string]interface{}{
+			"user_id":       foundUser.User_id,
+			"token_issued":  true,
+			"response_time": responseTime,
+		}, "info", r, traceID, http.StatusOK)
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": true, "message": "Login successful"}`))
+		// Return the token in the response
+		helpers.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
 	}
 }
 
