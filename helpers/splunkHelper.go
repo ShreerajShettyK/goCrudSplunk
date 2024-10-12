@@ -3,16 +3,11 @@ package helpers
 import (
 	"bytes"
 	"encoding/json"
+	"goCrudSplunk/configs"
 	"goCrudSplunk/models"
 	"net/http"
 
 	"go.uber.org/zap"
-)
-
-const (
-	splunkURL   = "http://localhost:8088/services/collector"
-	splunkToken = "2160b621-3bad-4f49-a250-9ce3aad42135"
-	splunkIndex = "user_management_api_dev"
 )
 
 func SendLogToSplunk(message string, extraFields map[string]interface{}, level string) {
@@ -21,10 +16,10 @@ func SendLogToSplunk(message string, extraFields map[string]interface{}, level s
 			"message": message,
 			"level":   level,
 		},
-		Host:       "localhost",
-		Sourcetype: "logrus_go_app",
-		Source:     "http-event-logs",
-		Index:      splunkIndex,
+		Host:       configs.Envs.SplunkHost,
+		Sourcetype: configs.Envs.SplunkSType,
+		Source:     configs.Envs.SplunkSource,
+		Index:      configs.Envs.SplunkIndex,
 	}
 
 	for k, v := range extraFields {
@@ -37,12 +32,12 @@ func SendLogToSplunk(message string, extraFields map[string]interface{}, level s
 		return
 	}
 
-	req, err := http.NewRequest("POST", splunkURL, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", configs.Envs.SplunkURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		zap.S().Errorf("Error creating HTTP request: %s", err)
 		return
 	}
-	req.Header.Set("Authorization", "Splunk "+splunkToken)
+	req.Header.Set("Authorization", "Splunk "+configs.Envs.SplunkToken)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
