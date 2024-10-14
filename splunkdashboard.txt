@@ -1,0 +1,338 @@
+{
+    "dataSources": {
+        "ds_4EyuQBNz": {
+            "type": "ds.search",
+            "options": {
+                "query": "index=\"user_management_api_dev\"\n| head 6",
+                "queryParameters": {
+                    "earliest": "0"
+                }
+            },
+            "name": "Real-Time Api Hits 1 search"
+        },
+        "ds_rJatSCFz": {
+            "type": "ds.chain",
+            "options": {
+                "query": "| fieldsummary maxvals=10",
+                "extend": "ds_4EyuQBNz"
+            },
+            "name": "Real-Time Api Hits 2 search"
+        },
+        "ds_LMEnqskf": {
+            "type": "ds.search",
+            "options": {
+                "query": "index=\"user_management_api_dev\" uri=\"/users/login\"\n| eval login_status=if(response_code=200, \"Success\", \"Failure\")\n| stats count by login_status",
+                "queryParameters": {
+                    "earliest": "$tr_6Wa3jQuc.earliest$",
+                    "latest": "$tr_6Wa3jQuc.latest$"
+                }
+            },
+            "name": "Login Success VS. Failure - Pie chart search"
+        },
+        "ds_QbkNB5j3": {
+            "type": "ds.search",
+            "options": {
+                "query": "index=\"user_management_api_dev\"\n| stats count by response_code",
+                "queryParameters": {
+                    "earliest": "$tr_6Wa3jQuc.earliest$",
+                    "latest": "$tr_6Wa3jQuc.latest$"
+                }
+            },
+            "name": "Response Codes Distribution - Bar chart search"
+        },
+        "ds_625My9rB": {
+            "type": "ds.search",
+            "options": {
+                "query": "index=\"user_management_api_dev\"\r\n| stats count as API_Hits",
+                "queryParameters": {
+                    "earliest": "$tr_6Wa3jQuc.earliest$",
+                    "latest": "$tr_6Wa3jQuc.latest$"
+                }
+            },
+            "name": "Number of API Hits - Single value search"
+        },
+        "ds_FI9KNP05": {
+            "type": "ds.search",
+            "options": {
+                "query": "index=\"user_management_api_dev\" method=* uri=* \n| stats count by uri \n| sort -count \n| head 2",
+                "queryParameters": {
+                    "earliest": "$tr_6Wa3jQuc.earliest$",
+                    "latest": "$tr_6Wa3jQuc.latest$"
+                }
+            },
+            "name": "Most Active Endpoint - Single value search"
+        },
+        "ds_22lly3ul": {
+            "type": "ds.search",
+            "options": {
+                "query": "index=\"user_management_api_dev\"\n| stats avg(response_time) as avg_response_time by uri",
+                "queryParameters": {
+                    "earliest": "$tr_6Wa3jQuc.earliest$",
+                    "latest": "$tr_6Wa3jQuc.latest$"
+                }
+            },
+            "name": "Average Response Time by uri - Column chart search"
+        },
+        "ds_0n62BVVL": {
+            "type": "ds.search",
+            "options": {
+                "queryParameters": {
+                    "earliest": "$tr_6Wa3jQuc.earliest$",
+                    "latest": "$tr_6Wa3jQuc.latest$"
+                },
+                "query": "index=\"user_management_api_dev\" \r\n| head 10\r\n| eval Time=strftime(_time, \"%A, %B %e, %Y %I:%M %p\") \r\n| fields Time, level, message, uri, method, response_code, response_time, error, user_id, token_issued, user_agent\r\n| fields - \"_raw\" \"_time\" \"_sourcetype\" \"_cd\" \"_bkt\" \"_index\" \"_serial\" \"_indextime\" \"user_agent\" \"_si\"\r\n"
+            },
+            "name": "Search_1"
+        }
+    },
+    "visualizations": {
+        "viz_jhpUjFXH": {
+            "type": "splunk.table",
+            "dataSources": {
+                "fieldsummary": "ds_rJatSCFz",
+                "primary": "ds_0n62BVVL"
+            },
+            "title": "Latest API hits",
+            "containerOptions": {
+                "visibility": {}
+            },
+            "showProgressBar": false,
+            "showLastUpdated": false,
+            "options": {
+                "backgroundColor": "> themes.defaultBackgroundColor",
+                "tableFormat": {
+                    "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableRowBackgroundColorsByTheme)"
+                }
+            }
+        },
+        "viz_SZPwW2Wu": {
+            "type": "splunk.pie",
+            "options": {
+                "collapseThreshold": 0.01,
+                "seriesColors": [
+                    "#ff0000",
+                    "#4BB543"
+                ]
+            },
+            "dataSources": {
+                "primary": "ds_LMEnqskf"
+            },
+            "title": "Login Success VS. Failure"
+        },
+        "viz_7PYIEnbq": {
+            "type": "splunk.bar",
+            "options": {
+                "yAxisAbbreviation": "auto",
+                "y2AxisAbbreviation": "auto",
+                "showRoundedY2AxisLabels": false,
+                "legendTruncation": "ellipsisMiddle",
+                "showY2MajorGridLines": true,
+                "xAxisTitleVisibility": "show",
+                "yAxisTitleVisibility": "show",
+                "y2AxisTitleVisibility": "show",
+                "yAxisScale": "linear",
+                "dataValuesDisplay": "all",
+                "stackMode": "auto",
+                "showSplitSeries": false,
+                "showIndependentYRanges": false,
+                "legendDisplay": "right"
+            },
+            "dataSources": {
+                "primary": "ds_QbkNB5j3"
+            },
+            "title": "Response Codes Distribution"
+        },
+        "viz_Ak7ARi41": {
+            "type": "splunk.singlevalue",
+            "options": {
+                "numberPrecision": 0,
+                "sparklineDisplay": "below",
+                "trendDisplay": "absolute",
+                "unitPosition": "after",
+                "shouldUseThousandSeparators": true,
+                "backgroundColor": "#000000",
+                "majorColor": "#0877a6",
+                "trendColor": "#000000"
+            },
+            "context": {
+                "convertedColorRange": [
+                    {
+                        "from": 0,
+                        "value": "#1182f3"
+                    },
+                    {
+                        "to": 0,
+                        "value": "#118832"
+                    }
+                ]
+            },
+            "dataSources": {
+                "primary": "ds_625My9rB"
+            },
+            "title": "Number of API Hits"
+        },
+        "viz_HGaJrw3n": {
+            "type": "splunk.singlevalue",
+            "options": {
+                "numberPrecision": 0,
+                "sparklineDisplay": "below",
+                "trendDisplay": "absolute",
+                "unitPosition": "after",
+                "shouldUseThousandSeparators": true,
+                "majorColor": "#ffffff",
+                "majorValue": "> sparklineValues | lastPoint()",
+                "trendValue": "> sparklineValues | delta(-2)",
+                "sparklineValues": "> primary | seriesByName('uri')"
+            },
+            "context": {
+                "convertedColorRange": [
+                    {
+                        "from": 100,
+                        "value": "#dc4e41"
+                    },
+                    {
+                        "from": 70,
+                        "to": 100,
+                        "value": "#f1813f"
+                    },
+                    {
+                        "from": 30,
+                        "to": 70,
+                        "value": "#f8be34"
+                    },
+                    {
+                        "from": 0,
+                        "to": 30,
+                        "value": "#0877a6"
+                    },
+                    {
+                        "to": 0,
+                        "value": "#53a051"
+                    }
+                ]
+            },
+            "dataSources": {
+                "primary": "ds_FI9KNP05"
+            },
+            "title": "Most Active Endpoint"
+        },
+        "viz_bRLUYyk4": {
+            "type": "splunk.column",
+            "options": {
+                "yAxisAbbreviation": "auto",
+                "y2AxisAbbreviation": "auto",
+                "showRoundedY2AxisLabels": false,
+                "legendTruncation": "ellipsisMiddle",
+                "showY2MajorGridLines": true,
+                "xAxisLabelRotation": 0,
+                "xAxisTitleVisibility": "show",
+                "yAxisTitleVisibility": "show",
+                "y2AxisTitleVisibility": "show",
+                "yAxisScale": "linear",
+                "showOverlayY2Axis": false,
+                "y2AxisScale": "inherit",
+                "dataValuesDisplay": "all",
+                "showSplitSeries": false,
+                "showIndependentYRanges": false,
+                "legendDisplay": "right"
+            },
+            "dataSources": {
+                "primary": "ds_22lly3ul"
+            },
+            "title": "Average Response Time by URI"
+        }
+    },
+    "inputs": {
+        "input_9RDskAyp": {
+            "options": {
+                "defaultValue": "-24h@h,now",
+                "token": "tr_6Wa3jQuc"
+            },
+            "title": "Time Range Input Title",
+            "type": "input.timerange"
+        }
+    },
+    "layout": {
+        "type": "grid",
+        "options": {
+            "width": 1440,
+            "height": 462
+        },
+        "structure": [
+            {
+                "item": "viz_Ak7ARi41",
+                "type": "block",
+                "position": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 224,
+                    "h": 172
+                }
+            },
+            {
+                "item": "viz_SZPwW2Wu",
+                "type": "block",
+                "position": {
+                    "x": 0,
+                    "y": 172,
+                    "w": 664,
+                    "h": 257
+                }
+            },
+            {
+                "item": "viz_bRLUYyk4",
+                "type": "block",
+                "position": {
+                    "x": 0,
+                    "y": 429,
+                    "w": 1440,
+                    "h": 413
+                }
+            },
+            {
+                "item": "viz_jhpUjFXH",
+                "type": "block",
+                "position": {
+                    "x": 0,
+                    "y": 842,
+                    "w": 1440,
+                    "h": 300
+                }
+            },
+            {
+                "item": "viz_HGaJrw3n",
+                "type": "block",
+                "position": {
+                    "x": 224,
+                    "y": 0,
+                    "w": 440,
+                    "h": 172
+                }
+            },
+            {
+                "item": "viz_7PYIEnbq",
+                "type": "block",
+                "position": {
+                    "x": 664,
+                    "y": 0,
+                    "w": 776,
+                    "h": 429
+                }
+            }
+        ],
+        "globalInputs": [
+            "input_9RDskAyp"
+        ]
+    },
+    "title": "User Management Service Dashboard Copy",
+    "description": "",
+    "defaults": {
+        "dataSources": {
+            "ds.search": {
+                "options": {
+                    "queryParameters": {}
+                }
+            }
+        }
+    }
+}
