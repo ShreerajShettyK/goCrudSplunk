@@ -1,0 +1,291 @@
+{
+    "visualizations": {
+        "viz_w0c0MBDi": {
+            "type": "splunk.singlevalue",
+            "dataSources": {
+                "primary": "ds_0t1zvSZl"
+            },
+            "containerOptions": {},
+            "showProgressBar": false,
+            "showLastUpdated": false,
+            "title": "Total Events"
+        },
+        "viz_cNzwyWcl": {
+            "type": "splunk.singlevalueradial",
+            "dataSources": {
+                "primary": "ds_D0dWpjS8"
+            },
+            "title": "AVG Memory%"
+        },
+        "viz_eneG2ngl": {
+            "type": "splunk.singlevalueradial",
+            "dataSources": {
+                "primary": "ds_uICGXQPV"
+            },
+            "title": "AVG CPU%",
+            "options": {},
+            "context": {},
+            "containerOptions": {},
+            "showProgressBar": false,
+            "showLastUpdated": false
+        },
+        "viz_nf71zDpR": {
+            "type": "splunk.parallelcoordinates",
+            "dataSources": {
+                "primary": "ds_2NQB52x9"
+            },
+            "containerOptions": {},
+            "showProgressBar": false,
+            "showLastUpdated": false,
+            "title": "Average Bytes Data"
+        },
+        "viz_RZ4JWn50": {
+            "type": "splunk.table",
+            "dataSources": {
+                "primary": "ds_X5Z5acDb"
+            },
+            "containerOptions": {},
+            "showProgressBar": false,
+            "showLastUpdated": false,
+            "title": "CPU vs Memory",
+            "options": {
+                "fontSize": "large"
+            }
+        },
+        "viz_CA9eJUja": {
+            "type": "splunk.table",
+            "dataSources": {
+                "primary": "ds_kz1WXavE"
+            },
+            "title": "Latest System Metrics",
+            "options": {
+                "columnFormat": {
+                    "sourcetype": {
+                        "width": 84
+                    },
+                    "metric_name:network.bytes_sent": {
+                        "width": 97
+                    },
+                    "host": {
+                        "width": 60
+                    },
+                    "_time": {
+                        "width": 84
+                    },
+                    "metric_name:cpu.percent": {
+                        "width": 85
+                    },
+                    "metric_name:network.bytes_recv": {
+                        "width": 106
+                    },
+                    "metric_name:memory.percent": {
+                        "width": 88
+                    }
+                }
+            }
+        },
+        "viz_RvUHSG2v": {
+            "type": "splunk.table",
+            "dataSources": {
+                "primary": "ds_KS4ozVNx_ds_X5Z5acDb"
+            },
+            "containerOptions": {},
+            "showProgressBar": false,
+            "showLastUpdated": false,
+            "title": "Bytes Sent vs Received",
+            "options": {
+                "fontSize": "large"
+            }
+        }
+    },
+    "dataSources": {
+        "ds_0t1zvSZl": {
+            "type": "ds.search",
+            "options": {
+                "query": "| mpreview index=metrics_index \r\n| stats count as total_events\r\n",
+                "enableSmartSources": true,
+                "queryParameters": {}
+            },
+            "name": "total_events"
+        },
+        "ds_D0dWpjS8": {
+            "type": "ds.search",
+            "options": {
+                "query": "| mpreview index=metrics_index\n| stats avg(metric_name:memory.percent) as avg_memory_percent",
+                "enableSmartSources": true
+            },
+            "name": "AVG Memory Percentage"
+        },
+        "ds_6GADW6Vm": {
+            "type": "ds.search",
+            "options": {
+                "query": "| mpreview index=metrics_index\r\n| stats range('metric_name:network.bytes_recv') as bytes_recv_range, \r\n        range('metric_name:network.bytes_sent') as bytes_sent_range\r\n| eval category=\"Bytes Received\", value=bytes_recv_range\r\n| union [| mpreview index=metrics_index\r\n          | stats range('metric_name:network.bytes_sent') as bytes_sent_range\r\n          | eval category=\"Bytes Sent\", value=bytes_sent_range]\r\n| fields category, value",
+                "enableSmartSources": true
+            },
+            "name": "byte_range"
+        },
+        "ds_uICGXQPV": {
+            "type": "ds.search",
+            "options": {
+                "query": "| mpreview index=metrics_index\n| stats avg(metric_name:cpu.percent) as avg_cpu_percent",
+                "enableSmartSources": true
+            },
+            "name": "AVG CPU Percentage"
+        },
+        "ds_2NQB52x9": {
+            "type": "ds.search",
+            "options": {
+                "query": "| mpreview index=metrics_index\n| stats avg(metric_name:network.bytes_recv) as bytes_recv_percent, avg(metric_name:network.bytes_sent) as bytes_sent_percent\n| table bytes_sent_percent, bytes_recv_percent",
+                "enableSmartSources": true
+            },
+            "name": "Bytes Data"
+        },
+        "ds_Kh36XPOW": {
+            "type": "ds.search",
+            "options": {
+                "query": "| mpreview index=metrics_index\n| stats avg(metric_name:cpu.percent) as cpu_percent, avg(metric_name:memory.percent) as memory_percent\n| table memory_percent, cpu_percent",
+                "enableSmartSources": true
+            },
+            "name": "CPU vs Memory"
+        },
+        "ds_X5Z5acDb": {
+            "type": "ds.search",
+            "options": {
+                "query": "| mpreview index=metrics_index \n| stats avg(metric_name:cpu.percent) as avg_cpu_percent, avg(metric_name:memory.percent) as avg_memory_percent \n| eval total_resource_usage = avg_cpu_percent + avg_memory_percent \n| eval cpu_percentage = round(avg_cpu_percent / total_resource_usage * 100,2)\n| eval memory_percentage = round(avg_memory_percent / total_resource_usage * 100 ,2)\n| chart sum(cpu_percentage) as total_cpu_percentage, sum(memory_percentage) as total_memory_percentage",
+                "enableSmartSources": true
+            },
+            "name": "Percentages"
+        },
+        "ds_kzHJvkqT": {
+            "type": "ds.search",
+            "options": {
+                "query": "| mpreview index=metrics_index\n| stats avg(metric_name:cpu.percent) as avg_cpu_percent, avg(metric_name:memory.percent) as avg_memory_percent, avg(metric_name:network.bytes_recv) as avg_bytes_recv, avg(metric_name:network.bytes_sent) as avg_bytes_sent\n| eval total_resource_usage = avg_cpu_percent + avg_memory_percent + avg_bytes_recv + avg_bytes_sent\n| eval cpu_percentage = avg_cpu_percent / total_resource_usage * 100\n| eval memory_percentage = avg_memory_percent / total_resource_usage * 100\n| eval network_recv_percentage = avg_bytes_recv / total_resource_usage * 100\n| eval network_sent_percentage = avg_bytes_sent / total_resource_usage * 100\n| table cpu_percentage, memory_percentage, network_recv_percentage, network_sent_percentage",
+                "enableSmartSources": true
+            },
+            "name": "Metrics"
+        },
+        "ds_kz1WXavE": {
+            "type": "ds.search",
+            "options": {
+                "enableSmartSources": true,
+                "query": "| mpreview index=metrics_index \r\n| eval Time=strftime(_time, \"%A, %B %e, %Y %I:%M %p\") \r\n| fields - _raw \r\n| fields - source\r\n| fields - host\r\n| fields - _time\r\n"
+            },
+            "name": "System Metrics"
+        },
+        "ds_KS4ozVNx_ds_X5Z5acDb": {
+            "type": "ds.search",
+            "options": {
+                "query": "| mpreview index=metrics_index\n| stats avg(metric_name:network.bytes_recv) as avg_bytes_recv, avg(metric_name:network.bytes_sent) as avg_bytes_sent\n| eval total_resource_usage = avg_bytes_recv + avg_bytes_sent\n| eval network_recv_percentage = round(avg_bytes_recv / total_resource_usage * 100,2)\n| eval network_sent_percentage = round(avg_bytes_sent / total_resource_usage * 100,2)\n| table network_recv_percentage, network_sent_percentage\n| chart sum(network_recv_percentage) as total_bytes_recv_percentage, sum(network_sent_percentage) as total_bytes_sent_percentage",
+                "enableSmartSources": true
+            },
+            "name": "Bytes Percentages"
+        }
+    },
+    "defaults": {
+        "dataSources": {
+            "ds.search": {
+                "options": {
+                    "queryParameters": {
+                        "latest": "$global_time.latest$",
+                        "earliest": "$global_time.earliest$"
+                    }
+                }
+            }
+        }
+    },
+    "inputs": {
+        "input_global_trp": {
+            "type": "input.timerange",
+            "options": {
+                "token": "global_time",
+                "defaultValue": "-24h@h,now"
+            },
+            "title": "Global Time Range"
+        }
+    },
+    "layout": {
+        "type": "absolute",
+        "options": {
+            "width": 1440,
+            "height": 960,
+            "display": "auto"
+        },
+        "structure": [
+            {
+                "item": "viz_w0c0MBDi",
+                "type": "block",
+                "position": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 400,
+                    "h": 300
+                }
+            },
+            {
+                "item": "viz_cNzwyWcl",
+                "type": "block",
+                "position": {
+                    "x": 770,
+                    "y": 300,
+                    "w": 670,
+                    "h": 320
+                }
+            },
+            {
+                "item": "viz_eneG2ngl",
+                "type": "block",
+                "position": {
+                    "x": 400,
+                    "y": 0,
+                    "w": 450,
+                    "h": 300
+                }
+            },
+            {
+                "item": "viz_nf71zDpR",
+                "type": "block",
+                "position": {
+                    "x": 0,
+                    "y": 300,
+                    "w": 770,
+                    "h": 320
+                }
+            },
+            {
+                "item": "viz_RZ4JWn50",
+                "type": "block",
+                "position": {
+                    "x": 850,
+                    "y": 0,
+                    "w": 590,
+                    "h": 150
+                }
+            },
+            {
+                "item": "viz_CA9eJUja",
+                "type": "block",
+                "position": {
+                    "x": 0,
+                    "y": 620,
+                    "w": 1440,
+                    "h": 270
+                }
+            },
+            {
+                "item": "viz_RvUHSG2v",
+                "type": "block",
+                "position": {
+                    "x": 850,
+                    "y": 150,
+                    "w": 590,
+                    "h": 150
+                }
+            }
+        ],
+        "globalInputs": [
+            "input_global_trp"
+        ]
+    },
+    "description": "",
+    "title": "Metrics Dashboard"
+}

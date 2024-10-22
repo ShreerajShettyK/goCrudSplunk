@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/go-chi/chi/splunkchi"
 	"go.uber.org/zap"
 )
 
@@ -24,7 +23,7 @@ func main() {
 
 	// Setup Chi router with OpenTelemetry instrumentation
 	router := chi.NewRouter()
-	router.Use(splunkchi.Middleware())
+	// router.Use(splunkchi.Middleware())
 
 	// Setup routes
 	routes.AuthRoutes(router, logger)

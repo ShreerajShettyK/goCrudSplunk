@@ -21,7 +21,7 @@
         "ds_LMEnqskf": {
             "type": "ds.search",
             "options": {
-                "query": "index=\"user_management_api_dev\" uri=\"/users/login\"\n| eval login_status=if(response_code=200, \"Success\", \"Failure\")\n| stats count by login_status",
+                "query": "index=\"user_management_api_dev\" uri=\"/users/login\"\r\n| eval login_status=if(response_code=200, \"Success\", \"Failure\")\r\n| stats count by login_status\r\n| eval login_status=if(login_status==\"Success\", \"A_Success\", \"B_Failure\")\r\n| sort login_status\r\n| eval login_status=replace(login_status, \"A_\", \"\")\r\n| eval login_status=replace(login_status, \"B_\", \"\")",
                 "queryParameters": {
                     "earliest": "$tr_6Wa3jQuc.earliest$",
                     "latest": "$tr_6Wa3jQuc.latest$"
@@ -102,6 +102,11 @@
                 "backgroundColor": "> themes.defaultBackgroundColor",
                 "tableFormat": {
                     "rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableRowBackgroundColorsByTheme)"
+                },
+                "columnFormat": {
+                    "Time": {
+                        "width": 152
+                    }
                 }
             }
         },
@@ -110,8 +115,8 @@
             "options": {
                 "collapseThreshold": 0.01,
                 "seriesColors": [
-                    "#ff0000",
-                    "#4BB543"
+                    "#4BB543",
+                    "#ff0000"
                 ]
             },
             "dataSources": {
@@ -296,7 +301,7 @@
                     "x": 0,
                     "y": 842,
                     "w": 1440,
-                    "h": 300
+                    "h": 353
                 }
             },
             {
@@ -324,7 +329,7 @@
             "input_9RDskAyp"
         ]
     },
-    "title": "User Management Service Dashboard Copy",
+    "title": "User Management Service Dashboard",
     "description": "",
     "defaults": {
         "dataSources": {
