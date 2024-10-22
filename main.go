@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
 
@@ -21,12 +21,10 @@ func main() {
 	// Use the environment variables from the config package
 	port := configs.Envs.Port
 
-	// Setup Chi router with OpenTelemetry instrumentation
+	// Setup Chi router
 	router := chi.NewRouter()
-	// router.Use(splunkchi.Middleware())
 
 	// Setup routes
-	routes.AuthRoutes(router, logger)
 	routes.UserRoutes(router, logger)
 
 	logger.Info("Starting server on port " + port)
