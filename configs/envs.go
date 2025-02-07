@@ -30,7 +30,7 @@ func initConfig() Config {
 		Port:                   getEnv("PORT", "8000"),
 		MongoURL:               getEnv("MONGOURL", ""),
 		SplunkURL:              getEnv("SPLUNKURL", ""),
-		SplunkToken:            getEnv("SPLUNKTOKEN", ""),
+		SplunkToken:            getEnv("SPLUNKHECTOKEN", ""),
 		SplunkIndex:            getEnv("SPLUNKINDEX", ""),
 		SplunkHost:             getEnv("SPLUNK_HOST", "localhost"),
 		SplunkSource:           getEnv("SPLUNK_SOURCE", "http-event-logs"),
