@@ -3,7 +3,7 @@
 ## Microservice Setup:
 This microservice is designed to expose some API endpoints for user-management-service which is integrated with splunk for log analysis. Follow the instructions below to set up your development environment and run the code.
  
-References
+References:
 - [Official REST splunk](https://docs.splunk.com/Documentation/Splunk/9.4.0/RESTREF/RESTknowledge#data.2Fui.2Fviews.2F.7Bname.7D)
  
 Note: Splunk version is 9.4.0
