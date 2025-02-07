@@ -1,6 +1,6 @@
 # GoLang CRUD Application with Splunk Logging
  
-##  setup:
+##  Setup:
 This microservice is designed to expose some API endpoints for user-management-service which is integrated with splunk for log analysis. Follow the instructions below to set up your development environment and run the code.
  
 References
