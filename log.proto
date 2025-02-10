@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package logstream;
+
+service LogService {
+  rpc StreamLogs(stream LogRequest) returns (LogResponse);
+}
+
+message LogRequest {
+  string message = 1;
+  string level = 2;
+  map<string, string> extra_fields = 3;
+}
+
+message LogResponse {
+  string status = 1;
+}

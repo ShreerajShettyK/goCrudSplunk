@@ -1,0 +1,22 @@
+// log_service.proto
+syntax = "proto3";
+
+package logging;
+
+option go_package = "goCrudSplunk/proto";
+
+service LogService {
+  rpc StreamLogs(stream LogRequest) returns (LogResponse) {}
+}
+
+message LogRequest {
+  string message = 1;
+  string level = 2;
+  map<string, string> metadata = 3;
+  string timestamp = 4;
+}
+
+message LogResponse {
+  bool success = 1;
+  string message = 2;
+}
