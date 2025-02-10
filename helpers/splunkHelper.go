@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"goCrudSplunk/configs"
@@ -60,6 +61,9 @@ func SendLogToSplunk(message string, extraFields map[string]interface{}, level s
 			MaxIdleConns:        100,
 			MaxIdleConnsPerHost: 100,
 			IdleConnTimeout:     90 * time.Second,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true, // Set to true if you want to skip certificate validation (not recommended for production)
+			},
 		},
 	}
 

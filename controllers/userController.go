@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"encoding/json"
 	"goCrudSplunk/auth"
 	"goCrudSplunk/configs"
@@ -17,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 )
 
@@ -44,11 +43,12 @@ func sendErrorResponse(w http.ResponseWriter, logger *zap.Logger, message string
 
 func Signup(logger *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
-		defer cancel()
 
-		span := trace.SpanFromContext(r.Context())
+		ctx, span := otel.Tracer("goCrudSplunk").Start(r.Context(), "Signup")
+		defer span.End()
+
 		traceID := span.SpanContext().TraceID().String()
+		logger.Info("TraceID captured", zap.String("trace_id", traceID))
 
 		start := time.Now()
 
@@ -101,11 +101,12 @@ func Signup(logger *zap.Logger) http.HandlerFunc {
 
 func Login(logger *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
-		defer cancel()
 
-		span := trace.SpanFromContext(r.Context())
+		ctx, span := otel.Tracer("goCrudSplunk").Start(r.Context(), "Login")
+		defer span.End()
+
 		traceID := span.SpanContext().TraceID().String()
+		logger.Info("TraceID captured", zap.String("trace_id", traceID))
 
 		start := time.Now()
 
@@ -162,11 +163,14 @@ func Login(logger *zap.Logger) http.HandlerFunc {
 
 func GetUsers(logger *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
-		defer cancel()
+		// ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		// defer cancel()
 
-		span := trace.SpanFromContext(r.Context())
+		ctx, span := otel.Tracer("goCrudSplunk").Start(r.Context(), "GetUsers")
+		defer span.End()
+
 		traceID := span.SpanContext().TraceID().String()
+		logger.Info("TraceID captured", zap.String("trace_id", traceID))
 
 		start := time.Now()
 
@@ -228,11 +232,14 @@ func GetUsers(logger *zap.Logger) http.HandlerFunc {
 
 func GetUser(logger *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
-		defer cancel()
+		// ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		// defer cancel()
 
-		span := trace.SpanFromContext(r.Context())
+		ctx, span := otel.Tracer("goCrudSplunk").Start(r.Context(), "GetUser")
+		defer span.End()
+
 		traceID := span.SpanContext().TraceID().String()
+		logger.Info("TraceID captured", zap.String("trace_id", traceID))
 
 		start := time.Now()
 

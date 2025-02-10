@@ -9,6 +9,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
 )
 
 func DBinstance() *mongo.Client {
@@ -20,8 +21,13 @@ func DBinstance() *mongo.Client {
 		log.Fatalf("Empty mongo db string")
 	}
 
+	// Add MongoDB instrumentation
+	opts := options.Client().
+		ApplyURI(connectionString).
+		SetMonitor(otelmongo.NewMonitor())
+
 	// Create a new MongoDB client
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectionString))
+	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
 		log.Fatalf("Error creating MongoDB client: %v", err)
 	}

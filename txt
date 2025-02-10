@@ -1,0 +1,18 @@
+# Service and Resource Configuration
+OTEL_SERVICE_NAME=user_management_api_dev
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=dev,service.version=0.0.1
+
+# OTLP Exporter Configuration
+OTEL_EXPORTER_OTLP_ENDPOINT=https://ingest.us1.signalfx.com:443
+OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=https://ingest.us1.signalfx.com:443
+OTEL_EXPORTER_OTLP_HEADERS=X-SF-Token=Ac8UD_cViTdt87kJbkYhRQ
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+
+# Sampling and Logging
+OTEL_TRACES_SAMPLER=always_on
+OTEL_TRACES_SAMPLER_ARG=1.0
+OTEL_LOG_LEVEL=debug
+
+# Splunk Configuration
+SPLUNK_ACCESS_TOKEN=Ac8UD_cViTdt87kJbkYhRQ
+SPLUNK_REALM=us1
