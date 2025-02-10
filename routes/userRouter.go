@@ -9,12 +9,13 @@ import (
 )
 
 func UserRoutes(router chi.Router, logger *zap.Logger) {
-	router.Use(otelhttp.NewMiddleware("goCrudSplunk")) // Add tracing middleware
+	router.Use(otelhttp.NewMiddleware("service")) // Add tracing middleware
 
 	router.Route("/users", func(r chi.Router) {
 		r.Post("/signup", controllers.Signup(logger))
 		r.Post("/login", controllers.Login(logger))
 		r.Get("/", controllers.GetUsers(logger))
 		r.Get("/{userID}", controllers.GetUser(logger))
+		r.Get("/getCourse", controllers.GetCourse(logger))
 	})
 }
