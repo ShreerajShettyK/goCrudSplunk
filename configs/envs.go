@@ -21,6 +21,9 @@ type Config struct {
 	JWTSecret              string
 	JWTExpirationInSeconds int64
 
+	// Add gRPC configuration
+	GrpcPort string
+
 	// New OpenTelemetry fields
 	OtelServiceName        string
 	OtelExporterEndpoint   string
@@ -55,6 +58,10 @@ func initConfig() Config {
 		DatabaseName:           getEnv("DB_NAME", "cluster0"),
 		JWTSecret:              getEnv("JWT_SECRET", "not-so-secret-now-is-it?"),
 		JWTExpirationInSeconds: getEnvAsInt("JWT_EXPIRATION_IN_SECONDS", 3600*24*7),
+
+		// Add gRPC configuration
+		GrpcPort: getEnv("GRPC_PORT", "50051"),
+
 		// New OpenTelemetry configurations
 		OtelServiceName:        getEnv("OTEL_SERVICE_NAME", "user_management_api_dev"),
 		OtelExporterEndpoint:   getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://ingest.us1.signalfx.com:443"),

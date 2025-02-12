@@ -3,7 +3,7 @@ syntax = "proto3";
 
 package logging;
 
-option go_package = "goCrudSplunk/proto";
+option go_package = "./proto";
 
 service LogService {
   rpc StreamLogs(stream LogRequest) returns (LogResponse) {}

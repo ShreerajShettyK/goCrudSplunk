@@ -132,7 +132,7 @@ package helpers
 import (
 	"fmt"
 	"goCrudSplunk/configs"
-	"goCrudSplunk/logclient"
+	"goCrudSplunk/log_client"
 	"log"
 	"sync"
 

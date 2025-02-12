@@ -2,6 +2,7 @@ package logserver
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"goCrudSplunk/configs"
 	pb "goCrudSplunk/proto"
@@ -16,8 +17,8 @@ import (
 )
 
 const (
-	batchSize     = 10
-	flushInterval = 5 * time.Second
+	batchSize     = 2
+	flushInterval = 70 * time.Second
 )
 
 type LogServer struct {
@@ -101,6 +102,14 @@ func (s *LogServer) flushLogs() {
 
 	client := &http.Client{
 		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 100,
+			IdleConnTimeout:     90 * time.Second,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true, // Set to true if you want to skip certificate validation (not recommended for production)
+			},
+		},
 	}
 
 	req, err := http.NewRequest("POST", configs.Envs.SplunkURL, bytes.NewBuffer(jsonData))
@@ -122,4 +131,6 @@ func (s *LogServer) flushLogs() {
 	if resp.StatusCode != http.StatusOK {
 		s.logger.Error("Non-200 response from Splunk", zap.Int("status", resp.StatusCode))
 	}
+
+	s.logger.Info("Logs sent to Splunk", zap.Int("count", len(batch)))
 }
