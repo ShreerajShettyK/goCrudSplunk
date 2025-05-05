@@ -1,3 +1,13 @@
+### 🔁 States of the Circuit Breaker
+
+| State         | Behavior                                                                       |
+|:------------- |:------------------------------------------------------------------------------ |
+| **Closed**    | Normal state. All requests are allowed. Failures are tracked.                  |
+| **Open**      | Requests are blocked to prevent further failures. Timer starts.                |
+| **Half-Open** | After timeout, one request is allowed. Based on its result, the state changes. |
+
+
+
 # GoLang CRUD Application with Splunk Logging
  
 ## Microservice Setup:
