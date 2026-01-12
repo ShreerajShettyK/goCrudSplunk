@@ -1,0 +1,183 @@
+name: Build Agents
+
+run-name: Build Agent - ${{ github.event.inputs.agent }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      agent:
+        description: 'Agent'
+        required: true
+        type: choice
+        options:
+          - gen-ai-ccna-mentor
+          - gen-ai-context-agent
+          - gen-ai-albert
+          - gen-ai-citation
+          - gen-ai-related-questions
+          - gen-ai-topic-mapper
+
+permissions:
+  id-token: write
+  contents: write
+
+env:
+  AWS_REGION: 'us-east-2'
+  AWS_ACCOUNT_ID: '381492017288'
+
+jobs:
+  Building-Agents:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/gitops-github-actions-role
+          role-session-name: GitHubActionsSessionECRPush
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set environment variables
+        id: vars
+        run: |
+          COMMIT_HASH=$(echo ${{ github.sha }} | cut -c 1-7)
+          BRANCH_NAME=$(echo ${{ github.ref_name }} | tr '/' '_')
+          IMAGE_TAG="${BRANCH_NAME}_${COMMIT_HASH}"
+          ECR_REPOSITORY="${{ github.event.inputs.agent }}"
+          ECR_REGISTRY="${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
+          
+          # Mask account ID for display (keep first 3 and last 3 digits)
+          MASKED_ACCOUNT_ID=$(echo "${{ env.AWS_ACCOUNT_ID }}" | sed 's/\(.\{3\}\).*\(.\{3\}\)/\1***\2/')
+          
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "ECR_REPOSITORY=$ECR_REPOSITORY" >> $GITHUB_OUTPUT
+          echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_OUTPUT
+          echo "IMAGE_NAME=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "MASKED_ACCOUNT_ID=$MASKED_ACCOUNT_ID" >> $GITHUB_OUTPUT
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Configure Git for module access
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "noreply@github.com"
+
+      - name: Build Docker image
+        working-directory: agents/${{ github.event.inputs.agent }}
+        run: |
+          docker build \
+            --build-arg GIT_USER=${{ github.actor }} \
+            --build-arg GIT_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -t ${{ steps.vars.outputs.IMAGE_NAME }} .
+
+      - name: Push image to Amazon ECR
+        run: |
+          docker push ${{ steps.vars.outputs.IMAGE_NAME }}
+
+      - name: Image build summary
+        run: |
+          echo "Successfully built and pushed Docker image:"
+          echo "Repository: ${{ steps.vars.outputs.ECR_REPOSITORY }}"
+          echo "Tag: ${{ steps.vars.outputs.IMAGE_TAG }}"
+          echo "Registry: ${{ steps.vars.outputs.MASKED_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
+          echo "Full Image: [MASKED_ACCOUNT_ID].dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ steps.vars.outputs.ECR_REPOSITORY }}:${{ steps.vars.outputs.IMAGE_TAG }}" 
+
+      - name: Check for agent changes
+        id: check-changes
+        run: |
+          AGENT_DIR="agents/${{ github.event.inputs.agent }}"
+          
+          AGENT_TAG_PREFIX=$(echo "${{ github.event.inputs.agent }}" | tr '-' '_')
+          LAST_TAG=$(git tag -l "${AGENT_TAG_PREFIX}_*" | sort -V | tail -n1)
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous tag found for agent ${{ github.event.inputs.agent }}"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "is_first_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "Last tag: $LAST_TAG"
+            if git diff --quiet "$LAST_TAG" HEAD -- "$AGENT_DIR"; then
+              echo "No changes detected in $AGENT_DIR since $LAST_TAG"
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+            else
+              echo "Changes detected in $AGENT_DIR since $LAST_TAG"
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+              echo "is_first_release=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+          # Set tag name with valid format: gen-ai-ccna-mentor-DEVSECOPS-13598_ab3dcb4
+          TAG_NAME="${{ github.event.inputs.agent }}-${{ steps.vars.outputs.IMAGE_TAG }}"
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        if: steps.check-changes.outputs.has_changes == 'true'
+        id: release-notes
+        run: |
+          AGENT_DIR="agents/${{ github.event.inputs.agent }}"
+          AGENT_TAG_PREFIX=$(echo "${{ github.event.inputs.agent }}" | tr '-' '_')
+          LAST_TAG=$(git tag -l "${AGENT_TAG_PREFIX}_*" | sort -V | tail -n1)
+          
+          echo "# Release Notes for ${{ github.event.inputs.agent }}" > release_notes.md
+          echo "" >> release_notes.md
+          echo "**Image:** \`${{ steps.vars.outputs.MASKED_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ steps.vars.outputs.ECR_REPOSITORY }}:${{ steps.vars.outputs.IMAGE_TAG }}\`" >> release_notes.md
+          echo "**Build Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> release_notes.md
+          echo "**Commit:** ${{ github.sha }}" >> release_notes.md
+          echo "" >> release_notes.md
+          
+          echo "## 🏷️ Tag Information" >> release_notes.md
+          echo "- **Tag:** ${{ steps.check-changes.outputs.tag_name }}" >> release_notes.md
+          echo "- **Branch:** ${{ github.ref_name }}" >> release_notes.md
+          
+          cat release_notes.md
+          
+          # Set output for GitHub release
+          {
+            echo 'notes<<EOF'
+            cat release_notes.md
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
+      - name: Configure Git
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "noreply@github.com"
+
+      - name: Create and push tag
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          TAG_NAME="${{ steps.check-changes.outputs.tag_name }}"
+          git tag -a "$TAG_NAME" -m "Release ${{ github.event.inputs.agent }} - $TAG_NAME"
+          git push origin "$TAG_NAME"
+          echo "Created and pushed tag: $TAG_NAME"
+
+      - name: Create GitHub Release
+        if: steps.check-changes.outputs.has_changes == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.check-changes.outputs.tag_name }}
+          release_name: "${{ github.event.inputs.agent }} - ${{ steps.vars.outputs.IMAGE_TAG }}"
+          body: ${{ steps.release-notes.outputs.notes }}
+          draft: false
+          prerelease: false
+
+      - name: No changes detected
+        if: steps.check-changes.outputs.has_changes == 'false'
+        run: |
+          echo "⚠️ No changes detected in agents/${{ github.event.inputs.agent }} since the last tag."
+          echo "Skipping tag creation and release notes."
+          echo "Image was still built and pushed: ${{ steps.vars.outputs.IMAGE_NAME }}"
+
+
